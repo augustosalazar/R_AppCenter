@@ -1,58 +1,63 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- * @flow
- */
+import React from 'react';
+import { FlatList, ActivityIndicator, Text, View  } from 'react-native';
 
-import React, { Component } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
+export default class App extends React.Component {
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' +
-    'Cmd+D or shake for dev menu',
-  android: 'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+  constructor(props){
+    super(props);
+    this.state ={ isLoading: true}
+  }
 
-type Props = {};
-export default class App extends Component<Props> {
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit App.js
-        </Text>
-        <Text style={styles.instructions}>
-          {instructions}
-        </Text>
+  componentDidMount(){
+    return fetch('https://facebook.github.io/react-native/movies.json')
+      .then((response) => response.json())
+      .then((responseJson) => {
+
+		let items = [];
+        let count = 0;
+        responseJson.movies.forEach(child => {
+          items.push({
+            title: child.title,
+            releaseYear: child.releaseYear,
+            key: count
+          });
+		  count = count + 1;
+        });
+	  
+        this.setState({
+          isLoading: false,
+          dataSource: items,
+        }, function(){
+
+        });
+
+      })
+      .catch((error) =>{
+        console.error(error);
+      });
+  }
+
+
+
+  render(){
+
+    if(this.state.isLoading){
+      return(
+        <View style={{flex: 1, padding: 20}}>
+          <ActivityIndicator/>
+        </View>
+      )
+    }
+
+    return(
+      <View style={{flex: 1, paddingTop:20}}>
+		<Text>hola</Text>
+        <FlatList
+          data={this.state.dataSource}
+          renderItem={({item}) => <Text>{item.title}, {item.releaseYear}, {item.key}</Text>}
+          keyExtractor={(item, index) => item.key.toString()}
+        />
       </View>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
